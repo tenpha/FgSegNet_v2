@@ -34,9 +34,9 @@ def main():
     datasetPath = sys.argv[1]
     binaryRootPath = sys.argv[2]
     
-    if not isValidRootFolder(datasetPath):
-        print('The folder ' + datasetPath + ' is not a valid root folder.');
-        return
+    # if not isValidRootFolder(datasetPath):
+    #     print('The folder ' + datasetPath + ' is not a valid root folder.');
+    #     return
     
     processFolder(datasetPath, binaryRootPath)
 

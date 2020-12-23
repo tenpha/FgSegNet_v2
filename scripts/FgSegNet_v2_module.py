@@ -48,7 +48,7 @@ class FgSegNet_v2_module(object):
         self.img_shape = img_shape
         self.scene = scene
         self.vgg_weights_path = vgg_weights_path
-        self.method_name = 'FgSegNet_v2'
+        self.method_name = 'FgSegNet2'
         
     def VGG16(self, x): 
         

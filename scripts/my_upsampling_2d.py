@@ -30,7 +30,7 @@ class MyUpSampling2D(Layer):
         self.input_spec = InputSpec(ndim=4)
         self.num_pixels = num_pixels
         self.method_name = method_name
-        assert method_name in ['FgSegNet_M', 'FgSegNet_S', 'FgSegNet_v2'], 'Provided method_name is incorrect.'
+        assert method_name in ['FgSegNet_M', 'FgSegNet_S', 'FgSegNet2'], 'Provided method_name is incorrect.'
 
     def compute_output_shape(self, input_shape):
         if self.data_format == 'channels_last':
@@ -76,7 +76,7 @@ def resize_images(x, height_factor, width_factor, data_format, num_pixels=None, 
         
         if method_name in ['FgSegNet_M', 'FgSegNet_S']:
             x = tf.image.resize_nearest_neighbor(x, new_shape)
-        else: # FgSegNet_v2
+        else: # FgSegNet2
             x = tf.image.resize_bilinear(x, new_shape)
         
         if(num_pixels is not None):

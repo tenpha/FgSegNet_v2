@@ -10,6 +10,8 @@ Created on Mon Jun 27 2018
 import numpy as np
 import os, glob, sys
 from keras.preprocessing import image as kImage
+from instance_normalization import InstanceNormalization
+from  FgSegNet_v2_module import loss,acc
 #from skimage.transform import pyramid_gaussian
 from keras.models import load_model
 from scipy.misc import imsave#, imresize
@@ -84,7 +86,7 @@ def generateData(scene_input_path, X_list, scene):
 
 #    return [X, s2, s3] #return for FgSegNet (multi-scale)
 
-    return X #return for FgSegNet_v2
+    return X #return for FgSegNet2
 
 def getFiles(scene_input_path):
     inlist = glob.glob(os.path.join(scene_input_path,'*.jpg'))
@@ -93,9 +95,9 @@ def getFiles(scene_input_path):
 
 
 # Extract all mask
-dataset = {
+dataset_xxx = {
            'baseline':[
-                   'highway', 
+                   'highway',
                    'pedestrians',
                    'office',
                    'PETS2006'
@@ -103,11 +105,11 @@ dataset = {
            'cameraJitter':[
                    'badminton',
                    'traffic',
-                   'boulevard', 
+                   'boulevard',
                    'sidewalk'
                    ],
            'badWeather':[
-                   'skating', 
+                   'skating',
                    'blizzard',
                    'snowFall',
                    'wetSnow'
@@ -168,17 +170,22 @@ dataset = {
                     'turbulence1',
                    'turbulence2',
                    'turbulence3'
-                    ] 
+                    ]
+ }
+dataset = {
+    'baseline': [
+        'highway',
+    ],
 }
-
 # number of exp frame (25, 50, 200)
 num_frames = 25
 
 # 1. Raw RGB frame to extract foreground masks, downloaded from changedetection.net
-raw_dataset_dir = 'CDnet2014_dataset'
+# raw_dataset_dir = 'CDnet2014_dataset'
+raw_dataset_dir = os.path.join('..','datasets','CDnet2014_dataset')
 
 # 2. model dir
-main_mdl_dir = os.path.join('FgSegNet_v2', 'models' + str(num_frames))
+main_mdl_dir = os.path.join('..','FgSegNet2','CDnet','models' + str(num_frames))
 
 # 3. path to store results
 results_dir = os.path.join('FgSegNet_v2', 'results' + str(num_frames))
@@ -217,7 +224,8 @@ for category, scene_list in dataset.items():
         results = checkFrame(X_list)
         
         # load model to segment
-        model = load_model(mdl_path)
+        model = load_model(mdl_path,custom_objects={'InstanceNormalization':InstanceNormalization,
+                                                    'loss':loss})
 
         # if large numbers of frames, slice it
         if(results[0]): 
@@ -230,7 +238,7 @@ for category, scene_list in dataset.items():
                 # For FgSegNet (multi-scale only) 
                 #Y_proba = model.predict([data[0], data[1], data[2]], batch_size=batch_size, verbose=1) # (xxx, 240, 320, 1)
                 
-                # For FgSegNet_v2
+                # For FgSegNet2
                 Y_proba = model.predict(data, batch_size=1, verbose=1)
                 del data
 
@@ -270,7 +278,7 @@ for category, scene_list in dataset.items():
             # For FgSegNet (multi-scale)
             #Y_proba = model.predict([data[0], data[1], data[2]], batch_size=batch_size, verbose=1) # (xxx, 240, 320, 1)
             
-            # For FgSegNet_v2
+            # For FgSegNet2
             Y_proba = model.predict(data, batch_size=1, verbose=1)
             
             del data

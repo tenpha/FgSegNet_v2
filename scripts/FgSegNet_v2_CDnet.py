@@ -6,8 +6,8 @@ Created on Mon Jun 27 2018
 @author: longang
 """
 
-get_ipython().magic(u'load_ext autoreload')
-get_ipython().magic(u'autoreload 2')
+# get_ipython().magic(u'load_ext autoreload')
+# get_ipython().magic(u'autoreload 2')
 
 import numpy as np
 import tensorflow as tf
@@ -172,7 +172,7 @@ dataset = {
             'turbulence':['turbulence0', 'turbulence1', 'turbulence2', 'turbulence3']
 }
 
-main_dir = os.path.join('..', 'FgSegNet_v2')
+main_dir = os.path.join('..', 'FgSegNet2')
 vgg_weights_path = 'vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
 if not os.path.exists(vgg_weights_path):
     WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'

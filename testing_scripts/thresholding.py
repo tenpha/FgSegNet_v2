@@ -65,7 +65,7 @@ def generateData(X_list):
     return X
 
 
-dataset = {
+dataset_origin = {
            'baseline':[
                    'highway',
                    'pedestrians',
@@ -142,7 +142,11 @@ dataset = {
                     'turbulence3'
                     ] 
 }
-
+dataset = {
+    'baseline': [
+        'highway',
+    ]
+}
 #try:
 th = 0.7 # threshold to apply [0.4, 0.5, 0.6, 0.7, 0.8, 0.9] or anyting btw
 num_frames = 25 #threshold for 25frames

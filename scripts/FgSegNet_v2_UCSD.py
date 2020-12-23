@@ -155,7 +155,7 @@ dataset = [
         ]
 
 
-main_dir = os.path.join('..', 'FgSegNet_v2')
+main_dir = os.path.join('..', 'FgSegNet2')
 vgg_weights_path = 'vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
 if not os.path.exists(vgg_weights_path):
     WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
