@@ -34,7 +34,8 @@ K.set_session(sess)
 import keras, glob
 from keras.preprocessing import image as kImage
 from sklearn.utils import compute_class_weight
-from FgSegNet_v2_module import FgSegNet_v2_module
+# from FgSegNet_v2_module import FgSegNet_v2_module
+from test_model import FgSegNet_v2_module
 from keras.utils.data_utils import get_file
 import gc
 

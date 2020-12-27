@@ -11,6 +11,7 @@ import numpy as np
 import os, glob, sys
 from keras.preprocessing import image as kImage
 from instance_normalization import InstanceNormalization
+from my_upsampling_2d import MyUpSampling2D
 from  FgSegNet_v2_module import loss,acc
 #from skimage.transform import pyramid_gaussian
 from keras.models import load_model
@@ -225,6 +226,7 @@ for category, scene_list in dataset.items():
         
         # load model to segment
         model = load_model(mdl_path,custom_objects={'InstanceNormalization':InstanceNormalization,
+                                                    'MyUpSampling2D':MyUpSampling2D,
                                                     'loss':loss})
 
         # if large numbers of frames, slice it
