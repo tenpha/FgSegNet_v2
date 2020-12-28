@@ -143,9 +143,12 @@ dataset_origin = {
                     ] 
 }
 dataset = {
-    'baseline': [
-        'highway',
-    ]
+    'lowFramerate': [
+        'port_0_17fps',
+        'tramCrossroad_1fps',
+        'tunnelExit_0_35fps',
+        'turnpike_0_5fps'
+    ],
 }
 #try:
 th = 0.7 # threshold to apply [0.4, 0.5, 0.6, 0.7, 0.8, 0.9] or anyting btw

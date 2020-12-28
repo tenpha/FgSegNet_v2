@@ -12,12 +12,13 @@ import os, glob, sys
 from keras.preprocessing import image as kImage
 from instance_normalization import InstanceNormalization
 from my_upsampling_2d import MyUpSampling2D
-from  FgSegNet_v2_module import loss,acc
+from FgSegNet_v2_module import loss,acc
+from mobilenetV2 import relu6
 #from skimage.transform import pyramid_gaussian
 from keras.models import load_model
 from scipy.misc import imsave#, imresize
 import gc
-
+from test_model import FgSegNet_v2_module
 
 # Optimize to avoid memory exploding. 
 # For each video sequence, we pick only 1000frames where res > 400
@@ -174,8 +175,11 @@ dataset_xxx = {
                     ]
  }
 dataset = {
-    'baseline': [
-        'highway',
+    'lowFramerate': [
+        'port_0_17fps',
+        'tramCrossroad_1fps',
+        'tunnelExit_0_35fps',
+        'turnpike_0_5fps'
     ],
 }
 # number of exp frame (25, 50, 200)
@@ -212,6 +216,7 @@ for category, scene_list in dataset.items():
         # refer to http://jacarini.dinf.usherbrooke.ca/datasetOverview/
         img = kImage.load_img(ROI_file, grayscale=True)
         img = kImage.img_to_array(img)
+        img_shape = img.shape
         img = img.reshape(-1) # to 1D
         idx = np.where(img == 0.)[0] # get the non-ROI, black area
         del img
@@ -225,10 +230,15 @@ for category, scene_list in dataset.items():
         results = checkFrame(X_list)
         
         # load model to segment
-        model = load_model(mdl_path,custom_objects={'InstanceNormalization':InstanceNormalization,
-                                                    'MyUpSampling2D':MyUpSampling2D,
-                                                    'loss':loss})
+        # model = load_model(mdl_path,custom_objects={'InstanceNormalization':InstanceNormalization,
+        #                                             'MyUpSampling2D':MyUpSampling2D,
+        #                                             'loss':loss,
+        #                                             'relu6':relu6})
 
+        model = FgSegNet_v2_module(lr=1e-4, img_shape=(img_shape[0],img_shape[1],3), scene=scene,
+                                   mobile_weights_path = "https://github.com/bonlime/keras-deeplab-v3-plus/releases/download/1.1/deeplabv3_mobilenetv2_tf_dim_ordering_tf_kernels.h5")
+        model = model.initModel('CDnet')
+        model.load_weights(mdl_path)
         # if large numbers of frames, slice it
         if(results[0]): 
             for rangeee in results[1]: # for each slice

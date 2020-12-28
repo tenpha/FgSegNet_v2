@@ -125,7 +125,7 @@ def getData(train_dir, dataset_dir):
     return [X, Y, cls_weight_list]
 
 ### training function    
-def train(data, scene, mdl_path, vgg_weights_path):
+def train(data, scene, mdl_path, mobile_weights_path):
     
     ### hyper-params
     lr = 1e-4
@@ -135,7 +135,7 @@ def train(data, scene, mdl_path, vgg_weights_path):
     ###
     
     img_shape = data[0][0].shape #(height, width, channel)
-    model = FgSegNet_v2_module(lr, img_shape, scene, vgg_weights_path)
+    model = FgSegNet_v2_module(lr, img_shape, scene, mobile_weights_path)
     model = model.initModel('CDnet')
     
     # make sure that training input shape equals to model output
@@ -151,7 +151,7 @@ def train(data, scene, mdl_path, vgg_weights_path):
                       callbacks=[redu, early], verbose=1, 
                       class_weight=data[2], shuffle = True)
     
-    model.save(mdl_path)
+    model.save_weights(mdl_path)
     del model, data, early, redu
 
 
@@ -160,27 +160,29 @@ def train(data, scene, mdl_path, vgg_weights_path):
 # =============================================================================
 
 dataset = {
-            'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
-            'cameraJitter':['badminton', 'traffic', 'boulevard', 'sidewalk'],
-            'badWeather':['skating', 'blizzard', 'snowFall', 'wetSnow'],
-            'dynamicBackground':['boats', 'canoe', 'fall', 'fountain01', 'fountain02', 'overpass'],
-            'intermittentObjectMotion':['abandonedBox', 'parking', 'sofa', 'streetLight', 'tramstop', 'winterDriveway'],
-            'lowFramerate':['port_0_17fps', 'tramCrossroad_1fps', 'tunnelExit_0_35fps', 'turnpike_0_5fps'],
-            'nightVideos':['bridgeEntry', 'busyBoulvard', 'fluidHighway', 'streetCornerAtNight', 'tramStation', 'winterStreet'],
-            'PTZ':['continuousPan', 'intermittentPan', 'twoPositionPTZCam', 'zoomInZoomOut'],
-            'shadow':['backdoor', 'bungalows', 'busStation', 'copyMachine', 'cubicle', 'peopleInShade'],
-            'thermal':['corridor', 'diningRoom', 'lakeSide', 'library', 'park'],
-            'turbulence':['turbulence0', 'turbulence1', 'turbulence2', 'turbulence3']
+            # 'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
+            # 'cameraJitter':['badminton', 'traffic', 'boulevard', 'sidewalk'],
+            # 'badWeather':['skating', 'blizzard', 'snowFall', 'wetSnow'],
+            # 'dynamicBackground':['boats', 'canoe', 'fall', 'fountain01', 'fountain02', 'overpass'],
+            # 'intermittentObjectMotion':['abandonedBox', 'parking', 'sofa', 'streetLight', 'tramstop', 'winterDriveway'],
+            # 'lowFramerate':['port_0_17fps', 'tramCrossroad_1fps', 'tunnelExit_0_35fps', 'turnpike_0_5fps'],
+            'lowFramerate':['turnpike_0_5fps'],
+            # 'nightVideos':['bridgeEntry', 'busyBoulvard', 'fluidHighway', 'streetCornerAtNight', 'tramStation', 'winterStreet'],
+            # 'PTZ':['continuousPan', 'intermittentPan', 'twoPositionPTZCam', 'zoomInZoomOut'],
+            # 'shadow':['backdoor', 'bungalows', 'busStation', 'copyMachine', 'cubicle', 'peopleInShade'],
+            # 'thermal':['corridor', 'diningRoom', 'lakeSide', 'library', 'park'],
+            # 'turbulence':['turbulence0', 'turbulence1', 'turbulence2', 'turbulence3']
 }
 
 main_dir = os.path.join('..', 'FgSegNet2')
-vgg_weights_path = 'vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
-if not os.path.exists(vgg_weights_path):
-    WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
-    vgg_weights_path = get_file('vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5',
-                                WEIGHTS_PATH_NO_TOP, cache_subdir='models',
-                                file_hash='6d6bbae143d832006294945121d1f1fc')
+# vgg_weights_path = 'vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
+# if not os.path.exists(vgg_weights_path):
+#     WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
+#     vgg_weights_path = get_file('vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5',
+#                                 WEIGHTS_PATH_NO_TOP, cache_subdir='models',
+#                                 file_hash='6d6bbae143d832006294945121d1f1fc')
 
+mobile_weights_path = "https://github.com/bonlime/keras-deeplab-v3-plus/releases/download/1.1/deeplabv3_mobilenetv2_tf_dim_ordering_tf_kernels.h5"
 
 # =============================================================================
 num_frames = 25 # either 25 or 200 training frames
@@ -201,7 +203,7 @@ for category, scene_list in dataset.items():
         data = getData(train_dir, dataset_dir)
         
         mdl_path = os.path.join(mdl_dir, 'mdl_' + scene + '.h5')
-        train(data, scene, mdl_path, vgg_weights_path)
+        train(data, scene, mdl_path, mobile_weights_path)
         del data
         
     gc.collect()
