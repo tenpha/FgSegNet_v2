@@ -13,12 +13,11 @@ from keras.preprocessing import image as kImage
 from instance_normalization import InstanceNormalization
 from my_upsampling_2d import MyUpSampling2D
 from FgSegNet_v2_module import loss,acc
-from mobilenetV2 import relu6
 #from skimage.transform import pyramid_gaussian
 from keras.models import load_model
 from scipy.misc import imsave#, imresize
 import gc
-from test_model import FgSegNet_v2_module
+from LLNet import FgSegNet_v2_module
 
 # Optimize to avoid memory exploding. 
 # For each video sequence, we pick only 1000frames where res > 400
@@ -175,11 +174,8 @@ dataset_xxx = {
                     ]
  }
 dataset = {
-    'lowFramerate': [
-        'port_0_17fps',
-        'tramCrossroad_1fps',
-        'tunnelExit_0_35fps',
-        'turnpike_0_5fps'
+    'baseline': [
+        'highway',
     ],
 }
 # number of exp frame (25, 50, 200)
@@ -235,8 +231,8 @@ for category, scene_list in dataset.items():
         #                                             'loss':loss,
         #                                             'relu6':relu6})
 
-        model = FgSegNet_v2_module(lr=1e-4, img_shape=(img_shape[0],img_shape[1],3), scene=scene,
-                                   mobile_weights_path = "https://github.com/bonlime/keras-deeplab-v3-plus/releases/download/1.1/deeplabv3_mobilenetv2_tf_dim_ordering_tf_kernels.h5")
+        model = FgSegNet_v2_module(lr=1e-4, img_shape=(img_shape[0],img_shape[1],3), scene=scene,weights_path=None)
+
         model = model.initModel('CDnet')
         model.load_weights(mdl_path)
         # if large numbers of frames, slice it

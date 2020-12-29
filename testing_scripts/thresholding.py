@@ -143,11 +143,8 @@ dataset_origin = {
                     ] 
 }
 dataset = {
-    'lowFramerate': [
-        'port_0_17fps',
-        'tramCrossroad_1fps',
-        'tunnelExit_0_35fps',
-        'turnpike_0_5fps'
+    'baseline': [
+        'highway'
     ],
 }
 #try:
