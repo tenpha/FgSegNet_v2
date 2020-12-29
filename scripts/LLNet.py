@@ -34,11 +34,6 @@ def acc(y_true, y_pred):
     y_true = tf.gather_nd(y_true, idx)
     return K.mean(K.equal(y_true, K.round(y_pred)), axis=-1)
 
-def loss2(y_true, y_pred):
-    return K.mean(K.binary_crossentropy(y_true, y_pred), axis=-1)
-
-def acc2(y_true, y_pred):
-    return K.mean(K.equal(y_true, K.round(y_pred)), axis=-1)
 
 def SepConv_BN(x, filters, prefix, stride=1, kernel_size=3, rate=1, depth_activation=False, epsilon=1e-3):
     """ SepConv with BN between depthwise & pointwise. Optionally add activation after BN
@@ -68,12 +63,12 @@ def SepConv_BN(x, filters, prefix, stride=1, kernel_size=3, rate=1, depth_activa
         x = Activation('relu')(x)
     x = DepthwiseConv2D((kernel_size, kernel_size), strides=(stride, stride), dilation_rate=(rate, rate),
                         padding=depth_padding, use_bias=False, name=prefix + '_depthwise')(x)
-    x = BatchNormalization(name=prefix + '_depthwise_BN', epsilon=epsilon)(x)
+    x = InstanceNormalization(name=prefix + '_depthwise_BN', epsilon=epsilon)(x)
     if depth_activation:
         x = Activation('relu')(x)
     x = Conv2D(filters, (1, 1), padding='same',
                use_bias=False, name=prefix + '_pointwise')(x)
-    x = BatchNormalization(name=prefix + '_pointwise_BN', epsilon=epsilon)(x)
+    x = InstanceNormalization(name=prefix + '_pointwise_BN', epsilon=epsilon)(x)
     if depth_activation:
         x = Activation('relu')(x)
 
@@ -141,23 +136,24 @@ class FgSegNet_v2_module(object):
 
     def decoder(self,x,skip1):
         # encoder
-        OS = 8
+        OS = 16
         input_shape = self.img_shape
         b0 = Conv2D(64, (1, 1), padding='same', use_bias=False, name='aspp0')(x)
-        b0 = BatchNormalization(name='aspp0_BN', epsilon=1e-5)(b0)
+        b0 = InstanceNormalization(name='aspp0_BN', epsilon=1e-5)(b0)
+        # b0 = BatchNormalization(name='aspp0_BN', epsilon=1e-5)(b0)
         b0 = Activation('relu', name='aspp0_activation')(b0)
 
         b1 = SepConv_BN(x, 64, 'aspp1',
-                        rate=4, depth_activation=True, epsilon=1e-5)
+                        rate=2, depth_activation=True, epsilon=1e-5)
         b2 = SepConv_BN(x, 64, 'aspp2',
-                        rate=8, depth_activation=True, epsilon=1e-5)
+                        rate=4, depth_activation=True, epsilon=1e-5)
         b3 = SepConv_BN(x, 64, 'aspp3',
-                        rate=16, depth_activation=True, epsilon=1e-5)
+                        rate=8, depth_activation=True, epsilon=1e-5)
 
         b4 = AveragePooling2D(pool_size=(int(np.ceil(input_shape[0] / OS)), int(np.ceil(input_shape[1] / OS))))(x)
-        b4 = Conv2D(64, (1, 1), padding='same',
-                    use_bias=False, name='image_pooling')(b4)
-        b4 = BatchNormalization(name='image_pooling_BN', epsilon=1e-5)(b4)
+        b4 = Conv2D(64, (1, 1), padding='same', use_bias=False, name='image_pooling')(b4)
+        b4 = InstanceNormalization(name='image_pooling_BN', epsilon=1e-5)(b4)
+        # b4 = BatchNormalization(name='image_pooling_BN', epsilon=1e-5)(b4)
         b4 = Activation('relu')(b4)
         b4 = BilinearUpsampling((int(np.ceil(input_shape[0] / OS)), int(np.ceil(input_shape[1] / OS))))(b4)
 
@@ -166,16 +162,17 @@ class FgSegNet_v2_module(object):
         # decoder
         x = Conv2D(64, (1, 1), padding='same', use_bias=False, name='concat_projection')(x)
         # x = InstanceNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
-        x = BatchNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
+        x = InstanceNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
+        # x = BatchNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
         x = Activation('relu')(x)
-        x = Dropout(0.1)(x)
+        x = Dropout(0.2)(x)
 
-        x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 2)),
-                                            int(np.ceil(input_shape[1] / 2))))(x)
-        dec_skip1 = Conv2D(64, (1, 1), padding='same',
-                           use_bias=False, name='feature_projection0')(skip1)
+        x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 4)),
+                                            int(np.ceil(input_shape[1] / 4))))(x)
+        dec_skip1 = Conv2D(64, (1, 1), padding='same', use_bias=False, name='feature_projection0')(skip1)
         # dec_skip1 = InstanceNormalization(name='feature_projection0_BN', epsilon=1e-5)(dec_skip1)
-        dec_skip1 = BatchNormalization(name='feature_projection0_BN', epsilon=1e-5)(dec_skip1)
+        dec_skip1 = InstanceNormalization(name='feature_projection0_BN', epsilon=1e-5)(dec_skip1)
+        # dec_skip1 = BatchNormalization(name='feature_projection0_BN', epsilon=1e-5)(dec_skip1)
         dec_skip1 = Activation('relu')(dec_skip1)
         x = Concatenate()([x, dec_skip1])
         x = SepConv_BN(x, 64, 'decoder_conv0',
@@ -196,28 +193,22 @@ class FgSegNet_v2_module(object):
         rs_output = resnet50(img_input)
         rs_model = Model(img_input,rs_output,name='LLNet')
 
-        for layer in rs_model.layers:
-            layer.trainable = False
-        path = get_file('deeplabv3_mobilenetv2_tf_dim_ordering_tf_kernels.h5',
+        # for layer in rs_model.layers:
+        #     layer.trainable = False
+        # for layer in rs_model.layers[-38:]:
+        #     layer.trainable = True
+        path = get_file('resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5',
                                     self.weights_path,
                                     cache_subdir='models')
         rs_model.load_weights(path, by_name=True)
 
-        for layer in rs_model.layers[-38:]:
-            layer.trainable = True
         # opt = keras.optimizers.RMSprop(lr=self.lr, rho=0.9, epsilon=1e-08, decay=0.)
 
         x,skip1 = rs_model.output
         x = self.decoder(x,skip1)
         model = Model(img_input,x)
         # Since UCSD has no void label, we do not need to filter out
-        if dataset_name == 'UCSD':
-            c_loss = loss2
-            c_acc = acc2
-        else:
-            c_loss = loss
-            c_acc = acc
 
-        model.compile(loss=c_loss, optimizer=Adam(self.lr), metrics=[c_acc])
+        model.compile(loss=loss, optimizer=Adam(self.lr), metrics=[acc])
         return model
 

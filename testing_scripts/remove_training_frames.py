@@ -15,8 +15,7 @@ def getFiles(scene_input_path):
 
 
 dataset = {
-    # 'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
-    'baseline':['highway',],
+    'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
     # 'cameraJitter':['badminton', 'traffic', 'boulevard', 'sidewalk'],
     # 'badWeather':['skating', 'blizzard', 'snowFall', 'wetSnow'],
     # 'dynamicBackground':['boats', 'canoe', 'fall', 'fountain01', 'fountain02', 'overpass'],
@@ -49,3 +48,5 @@ for category, scene_list in dataset.items():
         print('\n\t- remove training frames in '+th_path)
 
 # python processFolder.py ../../datasets/CDnet2014_dataset ../FgSegNet_v2/results25_th0.7
+# import os
+# os.system('python .\python_metrics\processFolder.py ..\datasets\CDnet2014_dataset .\FgSegNet_v2\results25_th0.7')

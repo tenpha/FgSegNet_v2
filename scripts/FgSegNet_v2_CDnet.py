@@ -161,8 +161,7 @@ def train(data, scene, mdl_path,weights_path):
 # =============================================================================
 
 dataset = {
-            # 'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
-            'baseline':['highway',],
+            'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
             # 'cameraJitter':['badminton', 'traffic', 'boulevard', 'sidewalk'],
             # 'badWeather':['skating', 'blizzard', 'snowFall', 'wetSnow'],
             # 'dynamicBackground':['boats', 'canoe', 'fall', 'fountain01', 'fountain02', 'overpass'],
@@ -182,7 +181,7 @@ main_dir = os.path.join('..', 'FgSegNet2')
 #     weights_path = get_file('vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5',
 #                                 WEIGHTS_PATH_NO_TOP, cache_subdir='models',
 #                                 file_hash='6d6bbae143d832006294945121d1f1fc')
-weights_path = "https://github.com/fchollet/deep-learning-models/releases/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5"
+weights_path = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
 
 # =============================================================================
 num_frames = 25 # either 25 or 200 training frames

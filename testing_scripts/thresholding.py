@@ -144,7 +144,10 @@ dataset_origin = {
 }
 dataset = {
     'baseline': [
-        'highway'
+        'highway',
+        'pedestrians',
+        'office',
+        'PETS2006'
     ],
 }
 #try:
@@ -206,3 +209,4 @@ for category, scene_list in dataset.items():
                 prev = len(s)
             del mask
         del X_list, results
+
