@@ -144,11 +144,11 @@ def train(data, scene, mdl_path,weights_path):
     output_shape = (model.output._keras_shape[1], model.output._keras_shape[2])
     assert input_shape==output_shape, 'Given input shape:' + str(input_shape) + ', but your model outputs shape:' + str(output_shape)
 
-    early = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=1e-4, patience=10, verbose=0, mode='auto')
-    redu = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1, mode='auto')
+    early = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, mode='auto')
+    redu = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, verbose=1, mode='auto')
     model.fit(data[0], data[1], 
                       validation_split=val_split, 
-                      epochs=max_epoch, batch_size=batch_size, 
+                      epochs=max_epoch, batch_size=batch_size,
                       callbacks=[redu, early], verbose=1, 
                       class_weight=data[2], shuffle = True)
     
@@ -161,7 +161,8 @@ def train(data, scene, mdl_path,weights_path):
 # =============================================================================
 
 dataset = {
-            'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
+            # 'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
+            'baseline':['highway'],
             # 'cameraJitter':['badminton', 'traffic', 'boulevard', 'sidewalk'],
             # 'badWeather':['skating', 'blizzard', 'snowFall', 'wetSnow'],
             # 'dynamicBackground':['boats', 'canoe', 'fall', 'fountain01', 'fountain02', 'overpass'],
@@ -175,6 +176,7 @@ dataset = {
 }
 
 main_dir = os.path.join('..', 'FgSegNet2')
+
 # weights_path = 'vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
 # if not os.path.exists(weights_path):
 #     WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
@@ -184,7 +186,7 @@ main_dir = os.path.join('..', 'FgSegNet2')
 weights_path = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
 
 # =============================================================================
-num_frames = 25 # either 25 or 200 training frames
+num_frames = 200 # either 25 or 200 training frames
 # =============================================================================
 
 assert num_frames in [25,200], 'num_frames is incorrect.'

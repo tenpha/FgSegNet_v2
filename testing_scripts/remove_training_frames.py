@@ -15,7 +15,8 @@ def getFiles(scene_input_path):
 
 
 dataset = {
-    'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
+    'baseline':['highway'],
+    # 'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
     # 'cameraJitter':['badminton', 'traffic', 'boulevard', 'sidewalk'],
     # 'badWeather':['skating', 'blizzard', 'snowFall', 'wetSnow'],
     # 'dynamicBackground':['boats', 'canoe', 'fall', 'fountain01', 'fountain02', 'overpass'],
@@ -33,7 +34,7 @@ for category, scene_list in dataset.items():
         print('\n->>> ' + category + ' / ' + scene)
         training_sets_path = os.path.join('..', 'training_sets', 'CDnet2014_train', category, scene)
 
-        th_path = os.path.join('FgSegNet_v2', 'results25_th0.7', category, scene)
+        th_path = os.path.join('.\FgSegNet_v2', 'results200_th0.7', category, scene)
         gt_list = getFiles(training_sets_path)
         th_list = getFiles(th_path)
         if (gt_list is None):

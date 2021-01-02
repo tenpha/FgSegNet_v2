@@ -175,14 +175,14 @@ dataset_xxx = {
  }
 dataset = {
     'baseline': [
-        # 'highway',
+        'highway',
         # 'pedestrians',
         # 'office',
-        'PETS2006'
+        # 'PETS2006'
     ],
 }
 # number of exp frame (25, 50, 200)
-num_frames = 25
+num_frames = 200
 
 # 1. Raw RGB frame to extract foreground masks, downloaded from changedetection.net
 # raw_dataset_dir = 'CDnet2014_dataset'
