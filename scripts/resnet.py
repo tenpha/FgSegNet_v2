@@ -197,10 +197,9 @@ def resnet50(input_tensor):
     x = identity_block2(x, 3, [256, 256, 1024], stage=4, block='b')
     x = identity_block2(x, 3, [256, 256, 1024], stage=4, block='c')
     x = identity_block2(x, 3, [256, 256, 1024], stage=4, block='d')
+    x = identity_block(x, 3, [256, 256, 1024], stage=4, block='e')
+    x = identity_block(x, 3, [256, 256, 1024], stage=4, block='f')
     x = Dropout(0.5)(x)
-    # x = identity_block(x, 3, [256, 256, 1024], stage=4, block='e')
-    # x = identity_block(x, 3, [256, 256, 1024], stage=4, block='f')
-
     return x,skip
     ## not use temporally.
     # x = conv_block(x, 3, [512, 512, 2048], stage=5, block='a')

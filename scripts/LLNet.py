@@ -144,11 +144,11 @@ class FgSegNet_v2_module(object):
         b0 = Activation('relu', name='aspp0_activation')(b0)
         # b0 = attach_attention_module(b0, attention_module='cbam_block')
 
-        b1 = SepConv_BN(x, 64, 'aspp1', rate=2, depth_activation=True, epsilon=1e-5)
+        b1 = SepConv_BN(x, 64, 'aspp1', rate=4, depth_activation=True, epsilon=1e-5)
         # b1 = attach_attention_module(b1, attention_module='cbam_block')
-        b2 = SepConv_BN(x, 64, 'aspp2', rate=4, depth_activation=True, epsilon=1e-5)
+        b2 = SepConv_BN(x, 64, 'aspp2', rate=8, depth_activation=True, epsilon=1e-5)
         # b2 = attach_attention_module(b2, attention_module='cbam_block')
-        b3 = SepConv_BN(x, 64, 'aspp3', rate=8, depth_activation=True, epsilon=1e-5)
+        b3 = SepConv_BN(x, 64, 'aspp3', rate=16, depth_activation=True, epsilon=1e-5)
         # b3 = attach_attention_module(b3, attention_module='cbam_block')
 
         b4 = AveragePooling2D(pool_size=(int(np.ceil(input_shape[0] / OS)), int(np.ceil(input_shape[1] / OS))))(x)
@@ -171,7 +171,7 @@ class FgSegNet_v2_module(object):
         x = InstanceNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
         # x = BatchNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
         x = Activation('relu')(x)
-        x = Dropout(0.1)(x)
+        x = Dropout(0.25)(x)
         x = attach_attention_module(x, attention_module='cbam_block')
         x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 4)),
                                             int(np.ceil(input_shape[1] / 4))))(x)

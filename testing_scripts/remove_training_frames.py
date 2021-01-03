@@ -15,8 +15,8 @@ def getFiles(scene_input_path):
 
 
 dataset = {
-    'baseline':['highway'],
-    # 'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
+    # 'baseline':['highway'],
+    'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
     # 'cameraJitter':['badminton', 'traffic', 'boulevard', 'sidewalk'],
     # 'badWeather':['skating', 'blizzard', 'snowFall', 'wetSnow'],
     # 'dynamicBackground':['boats', 'canoe', 'fall', 'fountain01', 'fountain02', 'overpass'],
@@ -28,7 +28,7 @@ dataset = {
     # 'thermal':['corridor', 'diningRoom', 'lakeSide', 'library', 'park'],
     # 'turbulence':['turbulence0', 'turbulence1', 'turbulence2', 'turbulence3']
 }
-th = 0.9
+th = 0.7
 num_frames = 200
 
 for category, scene_list in dataset.items():

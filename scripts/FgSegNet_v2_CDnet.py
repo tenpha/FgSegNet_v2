@@ -146,10 +146,12 @@ def train(data, scene, mdl_path,weights_path):
 
     early = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, mode='auto')
     redu = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, verbose=1, mode='auto')
+    chk = keras.callbacks.ModelCheckpoint(mdl_path, monitor='val_loss', verbose=1, save_best_only=True,
+                                          save_weights_only=True, mode='auto', period=1)
     model.fit(data[0], data[1], 
                       validation_split=val_split, 
                       epochs=max_epoch, batch_size=batch_size,
-                      callbacks=[redu, early], verbose=1, 
+                      callbacks=[redu, early, chk], verbose=1,
                       class_weight=data[2], shuffle = True)
     
     model.save_weights(mdl_path)
@@ -161,7 +163,7 @@ def train(data, scene, mdl_path,weights_path):
 # =============================================================================
 
 dataset = {
-            'baseline':['pedestrians', 'office', 'PETS2006'],
+            'baseline':['highway'],
             # 'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
             # 'cameraJitter':['badminton', 'traffic', 'boulevard', 'sidewalk'],
             # 'badWeather':['skating', 'blizzard', 'snowFall', 'wetSnow'],
