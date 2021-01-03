@@ -161,8 +161,8 @@ def train(data, scene, mdl_path,weights_path):
 # =============================================================================
 
 dataset = {
+            'baseline':['pedestrians', 'office', 'PETS2006'],
             # 'baseline':['highway', 'pedestrians', 'office', 'PETS2006'],
-            'baseline':['highway'],
             # 'cameraJitter':['badminton', 'traffic', 'boulevard', 'sidewalk'],
             # 'badWeather':['skating', 'blizzard', 'snowFall', 'wetSnow'],
             # 'dynamicBackground':['boats', 'canoe', 'fall', 'fountain01', 'fountain02', 'overpass'],

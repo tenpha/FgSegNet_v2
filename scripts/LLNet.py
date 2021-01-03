@@ -172,7 +172,7 @@ class FgSegNet_v2_module(object):
         # x = BatchNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
         x = Activation('relu')(x)
         x = Dropout(0.1)(x)
-
+        x = attach_attention_module(x, attention_module='cbam_block')
         x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 4)),
                                             int(np.ceil(input_shape[1] / 4))))(x)
         dec_skip1 = Conv2D(64, (1, 1), padding='same', use_bias=False, name='feature_projection0')(skip1)
@@ -186,10 +186,11 @@ class FgSegNet_v2_module(object):
 
         x = SepConv_BN(x, 64, 'decoder_conv0',
                        depth_activation=True, epsilon=1e-5)
-        x = BilinearUpsampling(output_size=(input_shape[0], input_shape[1]))(x)
-        # x = BatchNormalization(name='feature_projection1', epsilon=1e-5)(x)
         x = SepConv_BN(x, 64, 'decoder_conv1',
                        depth_activation=True, epsilon=1e-5)
+        x = attach_attention_module(x, attention_module='cbam_block')
+        x = BilinearUpsampling(output_size=(input_shape[0], input_shape[1]))(x)
+        # x = BatchNormalization(name='feature_projection1', epsilon=1e-5)(x)
         # x = attach_attention_module(x, attention_module='cbam_block')
         x = Conv2D(1, 1, padding='same', activation='sigmoid')(x)
 

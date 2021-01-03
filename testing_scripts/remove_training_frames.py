@@ -28,13 +28,14 @@ dataset = {
     # 'thermal':['corridor', 'diningRoom', 'lakeSide', 'library', 'park'],
     # 'turbulence':['turbulence0', 'turbulence1', 'turbulence2', 'turbulence3']
 }
+th = 0.9
+num_frames = 200
 
 for category, scene_list in dataset.items():
     for scene in scene_list:
         print('\n->>> ' + category + ' / ' + scene)
-        training_sets_path = os.path.join('..', 'training_sets', 'CDnet2014_train', category, scene)
-
-        th_path = os.path.join('.\FgSegNet_v2', 'results200_th0.7', category, scene)
+        training_sets_path = os.path.join('..', 'training_sets', 'CDnet2014_train', category, scene+str(num_frames))
+        th_path = os.path.join('.', 'FgSegNet_v2', 'results' + str(num_frames) + '_th' + str(th), category, scene)
         gt_list = getFiles(training_sets_path)
         th_list = getFiles(th_path)
         if (gt_list is None):

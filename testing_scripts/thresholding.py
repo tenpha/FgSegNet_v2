@@ -145,13 +145,13 @@ dataset_origin = {
 dataset = {
     'baseline': [
         'highway',
-        # 'pedestrians',
-        # 'office',
-        # 'PETS2006'
+        'pedestrians',
+        'office',
+        'PETS2006'
     ],
 }
 #try:
-th = 0.7 # threshold to apply [0.4, 0.5, 0.6, 0.7, 0.8, 0.9] or anyting btw
+th = 0.9 # threshold to apply [0.4, 0.5, 0.6, 0.7, 0.8, 0.9] or anyting btw
 num_frames = 200 #threshold for 25frames
 
 results_dir = os.path.join('FgSegNet_v2', 'results' + str(num_frames))

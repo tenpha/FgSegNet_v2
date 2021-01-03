@@ -176,9 +176,9 @@ dataset_xxx = {
 dataset = {
     'baseline': [
         'highway',
-        # 'pedestrians',
-        # 'office',
-        # 'PETS2006'
+        'pedestrians',
+        'office',
+        'PETS2006'
     ],
 }
 # number of exp frame (25, 50, 200)

@@ -13,7 +13,8 @@ from keras import backend as K
 import tensorflow as tf
 from mobilenetV2 import mobilenetV2
 import numpy as np
-
+from resnet import *
+from  attention_module import attach_attention_module
 
 def loss(y_true, y_pred):
     void_label = -1.
@@ -47,6 +48,36 @@ class FgSegNet_v2_module(object):
         self.mobile_weights_path = mobile_weights_path
         self.method_name = 'Test_model'
 
+    def resnet50(self, input_tensor):
+
+        x = ZeroPadding2D((3, 3))(input_tensor)
+        x = Conv2D(64, 7, 7, subsample=(2, 2), name='conv1')(x)
+        x = BatchNormalization(axis=3, name='bn_conv1')(x)
+        x = Activation('relu')(x)
+        x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+        # block2 (60,80,256)
+        x = conv_block(x, 3, [64, 64, 256], stage=2, block='a', strides=(1, 1))
+        x = identity_block(x, 3, [64, 64, 256], stage=2, block='b')
+        x = identity_block(x, 3, [64, 64, 256], stage=2, block='c')
+        skip = x
+        # block3 out shape (30,40,512)
+        x = conv_block(x, 3, [128, 128, 512], stage=3, block='a')
+        x = identity_block(x, 3, [128, 128, 512], stage=3, block='b')
+        x = identity_block(x, 3, [128, 128, 512], stage=3, block='c')
+        x = identity_block(x, 3, [128, 128, 512], stage=3, block='d')
+
+        # block4 out shape of (15,20,1024)
+        x = conv_block(x, 3, [256, 256, 1024], stage=4, block='a')
+        x = identity_block(x, 3, [256, 256, 1024], stage=4, block='b')
+        x = identity_block(x, 3, [256, 256, 1024], stage=4, block='c')
+        x = identity_block(x, 3, [256, 256, 1024], stage=4, block='d')
+        attn = attach_attention_module(skip,attention_module='cbam')
+
+        # x = Dropout(0.2)(x)
+        # x = identity_block(x, 3, [256, 256, 1024], stage=4, block='e')
+        # x = identity_block(x, 3, [256, 256, 1024], stage=4, block='f')
+
+        return x, skip
 
     def initModel(self, dataset_name):
         OS = 8
