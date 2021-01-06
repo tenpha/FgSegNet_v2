@@ -136,23 +136,23 @@ class FgSegNet_v2_module(object):
 
     def decoder(self,x,skip1):
         # encoder
-        OS = 16
+        OS = 8
         input_shape = self.img_shape
-        b0 = Conv2D(64, (1, 1), padding='same', use_bias=False, name='aspp0')(x)
+        b0 = Conv2D(128, (1, 1), padding='same', use_bias=False, name='aspp0')(x)
         b0 = InstanceNormalization(name='aspp0_BN', epsilon=1e-5)(b0)
         # b0 = BatchNormalization(name='aspp0_BN', epsilon=1e-5)(b0)
         b0 = Activation('relu', name='aspp0_activation')(b0)
         # b0 = attach_attention_module(b0, attention_module='cbam_block')
 
-        b1 = SepConv_BN(x, 64, 'aspp1', rate=4, depth_activation=True, epsilon=1e-5)
+        b1 = SepConv_BN(x, 128, 'aspp1', rate=4, depth_activation=True, epsilon=1e-5)
         # b1 = attach_attention_module(b1, attention_module='cbam_block')
-        b2 = SepConv_BN(x, 64, 'aspp2', rate=8, depth_activation=True, epsilon=1e-5)
+        b2 = SepConv_BN(x, 128, 'aspp2', rate=8, depth_activation=True, epsilon=1e-5)
         # b2 = attach_attention_module(b2, attention_module='cbam_block')
-        b3 = SepConv_BN(x, 64, 'aspp3', rate=16, depth_activation=True, epsilon=1e-5)
+        b3 = SepConv_BN(x, 128, 'aspp3', rate=16, depth_activation=True, epsilon=1e-5)
         # b3 = attach_attention_module(b3, attention_module='cbam_block')
 
         b4 = AveragePooling2D(pool_size=(int(np.ceil(input_shape[0] / OS)), int(np.ceil(input_shape[1] / OS))))(x)
-        b4 = Conv2D(64, (1, 1), padding='same', use_bias=False, name='image_pooling')(b4)
+        b4 = Conv2D(128, (1, 1), padding='same', use_bias=False, name='image_pooling')(b4)
         b4 = InstanceNormalization(name='image_pooling_BN', epsilon=1e-5)(b4)
         # b4 = BatchNormalization(name='image_pooling_BN', epsilon=1e-5)(b4)
         b4 = Activation('relu')(b4)
@@ -166,7 +166,7 @@ class FgSegNet_v2_module(object):
         x = attach_attention_module(x, attention_module='cbam_block')
 
         # decoder
-        x = Conv2D(64, (1, 1), padding='same', use_bias=False, name='concat_projection')(x)
+        x = Conv2D(128, (1, 1), padding='same', use_bias=False, name='concat_projection')(x)
         # x = attach_attention_module(x, attention_module='cbam_block')
         x = InstanceNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
         # x = BatchNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
@@ -175,7 +175,7 @@ class FgSegNet_v2_module(object):
         x = attach_attention_module(x, attention_module='cbam_block')
         x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 4)),
                                             int(np.ceil(input_shape[1] / 4))))(x)
-        dec_skip1 = Conv2D(64, (1, 1), padding='same', use_bias=False, name='feature_projection0')(skip1)
+        dec_skip1 = Conv2D(48, (1, 1), padding='same', use_bias=False, name='feature_projection0')(skip1)
         # dec_skip1 = InstanceNormalization(name='feature_projection0_BN', epsilon=1e-5)(dec_skip1)
         # dec_skip1 = attach_attention_module(dec_skip1, attention_module='cbam_block')
         dec_skip1 = InstanceNormalization(name='feature_projection0_BN', epsilon=1e-5)(dec_skip1)
@@ -184,9 +184,9 @@ class FgSegNet_v2_module(object):
         x = Concatenate()([x, dec_skip1])
         # x = attach_attention_module(x, attention_module='cbam_block')
 
-        x = SepConv_BN(x, 64, 'decoder_conv0',
+        x = SepConv_BN(x, 128, 'decoder_conv0',
                        depth_activation=True, epsilon=1e-5)
-        x = SepConv_BN(x, 64, 'decoder_conv1',
+        x = SepConv_BN(x, 128, 'decoder_conv1',
                        depth_activation=True, epsilon=1e-5)
         x = attach_attention_module(x, attention_module='cbam_block')
         x = BilinearUpsampling(output_size=(input_shape[0], input_shape[1]))(x)

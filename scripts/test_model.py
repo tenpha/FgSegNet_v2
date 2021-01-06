@@ -71,7 +71,7 @@ class FgSegNet_v2_module(object):
         x = identity_block(x, 3, [256, 256, 1024], stage=4, block='b')
         x = identity_block(x, 3, [256, 256, 1024], stage=4, block='c')
         x = identity_block(x, 3, [256, 256, 1024], stage=4, block='d')
-        attn = attach_attention_module(skip,attention_module='cbam')
+        # attn = attach_attention_module(skip,attention_module='cbam')
 
         # x = Dropout(0.2)(x)
         # x = identity_block(x, 3, [256, 256, 1024], stage=4, block='e')

@@ -10,6 +10,8 @@ Created on Mon Jun 27 2018
 import numpy as np
 import os, glob, sys
 from keras.preprocessing import image as kImage
+from keras.utils import get_file
+
 from instance_normalization import InstanceNormalization
 from my_upsampling_2d import MyUpSampling2D
 from FgSegNet_v2_module import loss,acc
@@ -17,7 +19,7 @@ from FgSegNet_v2_module import loss,acc
 from keras.models import load_model
 from scipy.misc import imsave#, imresize
 import gc
-from LLNet import FgSegNet_v2_module
+from FgSegNet_v2_module import FgSegNet_v2_module
 
 # Optimize to avoid memory exploding. 
 # For each video sequence, we pick only 1000frames where res > 400
@@ -180,6 +182,12 @@ dataset = {
         'office',
         'PETS2006'
     ],
+    # 'lowFramerate': [
+    #     'port_0_17fps',
+    #     'tramCrossroad_1fps',
+    #     'tunnelExit_0_35fps',
+    #     'turnpike_0_5fps'
+    # ],
 }
 # number of exp frame (25, 50, 200)
 num_frames = 200
@@ -233,8 +241,11 @@ for category, scene_list in dataset.items():
         #                                             'MyUpSampling2D':MyUpSampling2D,
         #                                             'loss':loss,
         #                                             'relu6':relu6})
-
-        model = FgSegNet_v2_module(lr=1e-4, img_shape=(img_shape[0],img_shape[1],3), scene=scene,weights_path=None)
+        WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
+        weights_path = get_file('vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5',
+                                WEIGHTS_PATH_NO_TOP, cache_subdir='models',
+                                file_hash='6d6bbae143d832006294945121d1f1fc')
+        model = FgSegNet_v2_module(lr=1e-4, img_shape=(img_shape[0],img_shape[1],3), scene=scene,vgg_weights_path=weights_path)
 
         model = model.initModel('CDnet')
         model.load_weights(mdl_path)

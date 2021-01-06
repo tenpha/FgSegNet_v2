@@ -28,7 +28,7 @@ dataset = {
     # 'thermal':['corridor', 'diningRoom', 'lakeSide', 'library', 'park'],
     # 'turbulence':['turbulence0', 'turbulence1', 'turbulence2', 'turbulence3']
 }
-th = 0.7
+th = 0.9
 num_frames = 200
 
 for category, scene_list in dataset.items():
