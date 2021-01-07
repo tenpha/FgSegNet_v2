@@ -133,16 +133,17 @@ class FgSegNet_v2_module(object):
         d8 = self.add_conv(x, 128, 3, padding='same', dilation_rate=8)
         d16 = self.add_conv(x, 128, 3, padding='same', dilation_rate=16)
 
-        weight_pool = self.add_conv(pool, 8, 1, padding='same')
-        weight_d1 = self.add_conv(d1, 8, 1, padding='same')
-        weight_d4 = self.add_conv(d4, 8, 1, padding='same')
-        weight_d8 = self.add_conv(d8, 8, 1, padding='same')
-        weight_d16 = self.add_conv(d16, 8, 1, padding='same')
+        weight_pool = self.add_conv(pool, 16, 1, padding='same')
+        weight_d1 = self.add_conv(d1, 16, 1, padding='same')
+        weight_d4 = self.add_conv(d4, 16, 1, padding='same')
+        weight_d8 = self.add_conv(d8, 16, 1, padding='same')
+        weight_d16 = self.add_conv(d16, 16, 1, padding='same')
 
         levels = Concatenate()([weight_pool, weight_d1, weight_d4, weight_d8, weight_d16])
+
         weight_levels = Conv2D(5, kernel_size=1)(levels)
         weight_levels = Activation('softmax')(weight_levels)
-
+        # weight_levels = Dropout(0.1)(weight_levels)
         fused_out = Add()([Multiply()([pool, slice(weight_levels,0)]),
                          Multiply()([d1,slice(weight_levels,1)]),
                          Multiply()([d4, slice(weight_levels,2)]),
@@ -150,8 +151,10 @@ class FgSegNet_v2_module(object):
                          Multiply()([d16, slice(weight_levels,4)]),
                          ])
 
-        fused_out = self.add_conv(fused_out,128,3, padding='same')
+        fused_out = self.add_conv(fused_out,256,3, padding='same')
         fused_out = SpatialDropout2D(0.25)(fused_out)
+        fused_out = self.add_conv(fused_out, 128, 3, padding='same')
+        # fused_out = Dropout(0.2)(fused_out)
         return fused_out
 
     def initModel(self, dataset_name):

@@ -34,9 +34,9 @@ K.set_session(sess)
 import keras, glob
 from keras.preprocessing import image as kImage
 from sklearn.utils import compute_class_weight
-from FgSegNet_v2_module import FgSegNet_v2_module
+# from FgSegNet_v2_module import FgSegNet_v2_module
 # from test_model import FgSegNet_v2_module
-# from LLNet import FgSegNet_v2_module
+from LLNet import FgSegNet_v2_module
 from keras.utils.data_utils import get_file
 import gc
 
@@ -145,7 +145,7 @@ def train(data, scene, mdl_path,weights_path):
     assert input_shape==output_shape, 'Given input shape:' + str(input_shape) + ', but your model outputs shape:' + str(output_shape)
 
     early = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, mode='auto')
-    redu = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, verbose=1, mode='auto')
+    redu = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1, mode='auto')
     chk = keras.callbacks.ModelCheckpoint(mdl_path, monitor='val_loss', verbose=1, save_best_only=True,
                                           save_weights_only=True, mode='auto', period=1)
     model.fit(data[0], data[1], 
@@ -179,13 +179,13 @@ dataset = {
 
 main_dir = os.path.join('..', 'FgSegNet2')
 
-weights_path = 'vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
-if not os.path.exists(weights_path):
-    WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
-    weights_path = get_file('vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5',
-                                WEIGHTS_PATH_NO_TOP, cache_subdir='models',
-                                file_hash='6d6bbae143d832006294945121d1f1fc')
-# weights_path = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
+# weights_path = 'vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
+# if not os.path.exists(weights_path):
+#     WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
+#     weights_path = get_file('vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5',
+#                                 WEIGHTS_PATH_NO_TOP, cache_subdir='models',
+#                                 file_hash='6d6bbae143d832006294945121d1f1fc')
+weights_path = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
 
 # =============================================================================
 num_frames = 200 # either 25 or 200 training frames

@@ -1,6 +1,7 @@
 import keras
 from keras.models import Model
-from keras.layers import Input, Dropout, Activation, SpatialDropout2D, BatchNormalization, Lambda, Concatenate
+from keras.layers import Input, Dropout, Activation, SpatialDropout2D, BatchNormalization, Lambda, Concatenate, Add, \
+    Multiply
 from keras.layers.convolutional import Conv2D, Cropping2D, UpSampling2D, ZeroPadding2D, DepthwiseConv2D
 from keras.layers.pooling import MaxPooling2D, GlobalAveragePooling2D, AveragePooling2D
 from keras.layers import concatenate, add, multiply
@@ -16,6 +17,8 @@ from mobilenetV2 import mobilenetV2
 import numpy as np
 from resnet import resnet50
 from attention_module import attach_attention_module
+
+
 def loss(y_true, y_pred):
     void_label = -1.
     y_pred = K.reshape(y_pred, [-1])
@@ -73,6 +76,19 @@ def SepConv_BN(x, filters, prefix, stride=1, kernel_size=3, rate=1, depth_activa
         x = Activation('relu')(x)
 
     return x
+
+def slice(x,idx):
+    if idx == 4:
+        return Lambda(lambda l: l[:,:,:,idx:])(x)
+    else:
+        return Lambda(lambda l: l[:,:,:,idx:idx+1])(x)
+
+def add_conv(x, channel, ksize, strides=(1, 1), padding='valid', dilation_rate=(1, 1)):
+    x = Conv2D(channel, kernel_size=ksize, strides=strides, padding=padding, dilation_rate=dilation_rate)(x)
+    x = InstanceNormalization()(x)
+    x = Activation('relu')(x)
+    return x
+
 
 class BilinearUpsampling(Layer):
     """Just a simple bilinear upsampling layer. Works only with TF.
@@ -136,11 +152,10 @@ class FgSegNet_v2_module(object):
 
     def decoder(self,x,skip1):
         # encoder
-        OS = 8
+        OS = 16
         input_shape = self.img_shape
         b0 = Conv2D(128, (1, 1), padding='same', use_bias=False, name='aspp0')(x)
         b0 = InstanceNormalization(name='aspp0_BN', epsilon=1e-5)(b0)
-        # b0 = BatchNormalization(name='aspp0_BN', epsilon=1e-5)(b0)
         b0 = Activation('relu', name='aspp0_activation')(b0)
         # b0 = attach_attention_module(b0, attention_module='cbam_block')
 
@@ -154,46 +169,41 @@ class FgSegNet_v2_module(object):
         b4 = AveragePooling2D(pool_size=(int(np.ceil(input_shape[0] / OS)), int(np.ceil(input_shape[1] / OS))))(x)
         b4 = Conv2D(128, (1, 1), padding='same', use_bias=False, name='image_pooling')(b4)
         b4 = InstanceNormalization(name='image_pooling_BN', epsilon=1e-5)(b4)
-        # b4 = BatchNormalization(name='image_pooling_BN', epsilon=1e-5)(b4)
+
         b4 = Activation('relu')(b4)
         b4 = BilinearUpsampling((int(np.ceil(input_shape[0] / OS)), int(np.ceil(input_shape[1] / OS))))(b4)
-        # b4 = attach_attention_module(b4, attention_module='cbam_block')
-        # b4 = MaxPooling2D(pool_size=(2,2),strides=1,padding='same')(x)
-        # b4 = Conv2D(64,(1,1),padding='same',use_bias=False, name='image_pooling')(b4)
-        # b4 = InstanceNormalization(name='image_pooling_BN', epsilon=1e-5)(b4)
-        # b4 = Activation('relu')(b4)
-        x = Concatenate()([b4, b0, b1, b2, b3])
-        x = attach_attention_module(x, attention_module='cbam_block')
 
-        # decoder
-        x = Conv2D(128, (1, 1), padding='same', use_bias=False, name='concat_projection')(x)
-        # x = attach_attention_module(x, attention_module='cbam_block')
-        x = InstanceNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
-        # x = BatchNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
-        x = Activation('relu')(x)
-        x = Dropout(0.25)(x)
-        x = attach_attention_module(x, attention_module='cbam_block')
+        weight_b4 = add_conv(b4, 16, 1, padding='same')
+        weight_b0 = add_conv(b0, 16, 1, padding='same')
+        weight_b1 = add_conv(b1, 16, 1, padding='same')
+        weight_b2 = add_conv(b2, 16, 1, padding='same')
+        weight_b3 = add_conv(b3, 16, 1, padding='same')
+        levels = Concatenate()([weight_b4, weight_b0, weight_b1, weight_b2, weight_b3])
+        weight_levels = Conv2D(5, kernel_size=1)(levels)
+        weight_levels = Activation('softmax')(weight_levels)
+        x = Add()([Multiply()([b4, slice(weight_levels,0)]),
+                         Multiply()([b0,slice(weight_levels,1)]),
+                         Multiply()([b1, slice(weight_levels,2)]),
+                         Multiply()([b2, slice(weight_levels,3)]),
+                         Multiply()([b3, slice(weight_levels,4)]),
+                         ])
+        x = add_conv(x, 128, 3, padding='same')
+        x = Dropout(0.1)(x)
         x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 4)),
                                             int(np.ceil(input_shape[1] / 4))))(x)
-        dec_skip1 = Conv2D(48, (1, 1), padding='same', use_bias=False, name='feature_projection0')(skip1)
-        # dec_skip1 = InstanceNormalization(name='feature_projection0_BN', epsilon=1e-5)(dec_skip1)
-        # dec_skip1 = attach_attention_module(dec_skip1, attention_module='cbam_block')
+        dec_skip1 = Conv2D(64, (1, 1), padding='same', use_bias=False, name='feature_projection0')(skip1)
+
         dec_skip1 = InstanceNormalization(name='feature_projection0_BN', epsilon=1e-5)(dec_skip1)
-        # dec_skip1 = BatchNormalization(name='feature_projection0_BN', epsilon=1e-5)(dec_skip1)
         dec_skip1 = Activation('relu')(dec_skip1)
         x = Concatenate()([x, dec_skip1])
-        # x = attach_attention_module(x, attention_module='cbam_block')
 
         x = SepConv_BN(x, 128, 'decoder_conv0',
                        depth_activation=True, epsilon=1e-5)
         x = SepConv_BN(x, 128, 'decoder_conv1',
                        depth_activation=True, epsilon=1e-5)
-        x = attach_attention_module(x, attention_module='cbam_block')
+        x = Conv2D(1, 1, padding='same')(x)
         x = BilinearUpsampling(output_size=(input_shape[0], input_shape[1]))(x)
-        # x = BatchNormalization(name='feature_projection1', epsilon=1e-5)(x)
-        # x = attach_attention_module(x, attention_module='cbam_block')
-        x = Conv2D(1, 1, padding='same', activation='sigmoid')(x)
-
+        x = Activation('sigmoid')(x)
         return x
 
     def initModel(self, dataset_name):
@@ -213,13 +223,14 @@ class FgSegNet_v2_module(object):
                                     cache_subdir='models')
         rs_model.load_weights(path, by_name=True)
 
-        # opt = keras.optimizers.RMSprop(lr=self.lr, rho=0.9, epsilon=1e-08, decay=0.)
+        opt = keras.optimizers.RMSprop(lr=self.lr, rho=0.9, epsilon=1e-08, decay=0.)
 
         x,skip1 = rs_model.output
         x = self.decoder(x,skip1)
         model = Model(img_input,x)
         # Since UCSD has no void label, we do not need to filter out
 
-        model.compile(loss=loss, optimizer=Adam(self.lr), metrics=[acc])
+        # model.compile(loss=loss, optimizer=Adam(self.lr), metrics=[acc])
+        model.compile(loss=loss, optimizer=opt, metrics=[acc])
         return model
 
